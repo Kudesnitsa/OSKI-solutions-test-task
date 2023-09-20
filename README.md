@@ -1,0 +1,1 @@
+# OSKI-solutions-test-task
