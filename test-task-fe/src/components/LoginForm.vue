@@ -16,8 +16,12 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import AuthService from "@/services/auth.service";
+import router from "@/router";
+
 export default {
+  name: 'LoginForm',
   data() {
     return {
       username: '',
@@ -30,16 +34,18 @@ export default {
       if (!this.username || !this.password) {
         this.loginError = 'Please enter both username and password.';
       } else {
-        this.username = '';
-        this.password = '';
-        this.loginError = '';
-        alert('Login successful!');
+        AuthService.login(this.username, this.password).then(
+            (response) => {
+              localStorage.setItem('token', response.data.accessToken);
+              router.push('/test/list');
+            },
+            (error) => {
+              this.loginError = error.response.data.message || error.message;
+            }
+        );
       }
     }
   }
 };
 </script>
-
-<style scoped>
-
-</style>
+<style scoped></style>

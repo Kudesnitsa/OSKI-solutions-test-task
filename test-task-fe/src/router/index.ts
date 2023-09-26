@@ -1,37 +1,30 @@
 import {createRouter, createWebHistory} from 'vue-router'
+import type {NavigationGuardNext, RouteLocation} from 'vue-router';
 import TestList from "@/components/TestList.vue";
 import TestItem from "@/components/TestItem.vue";
 import AuthView from "@/views/AuthView.vue";
-import Login from "@/components/Login.vue";
 import MainView from "@/views/MainView.vue";
+import LoginForm from "@/components/LoginForm.vue";
 
-// function guardMyRoute(to, from, next) {
-//     let isAuthenticated = false;
-//
-//     if (localStorage.getItem('LoggedUser'))
-//         isAuthenticated = true;
-//     else
-//         isAuthenticated = false;
-//     if (isAuthenticated) {
-//         next();
-//     } else {
-//         next('/login');
-//     }
-// }
-//
-// function guardMyAuthRoute(to, from, next) {
-//     let isAuthenticated = false;
-//
-//     if (localStorage.getItem('LoggedUser'))
-//         isAuthenticated = true;
-//     else
-//         isAuthenticated = false;
-//     if (!isAuthenticated) {
-//         next();
-//     } else {
-//         next('/test');
-//     }
-// }
+function guardMyRoute(to: RouteLocation, from: RouteLocation, next: NavigationGuardNext) {
+    const isAuthenticated = localStorage.getItem('token');
+
+    if (isAuthenticated) {
+        next();
+    } else {
+        next('/auth/login');
+    }
+}
+
+function guardMyAuthRoute(to: RouteLocation, from: RouteLocation, next: NavigationGuardNext) {
+    const isAuthenticated = localStorage.getItem('token');
+
+    if (!isAuthenticated) {
+        next();
+    } else {
+        next('/test');
+    }
+}
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -40,9 +33,10 @@ const router = createRouter({
             path: '/test',
             name: 'home',
             component: MainView,
+            beforeEnter: guardMyRoute,
             children: [
                 {
-                    path: 'list',
+                    path: '/',
                     component: TestList,
                 },
                 {
@@ -54,13 +48,18 @@ const router = createRouter({
         {
             path: '/auth',
             name: 'auth',
+            beforeEnter: guardMyAuthRoute,
             component: AuthView,
             children: [
                 {
                     path: 'login',
-                    component: Login,
+                    component: LoginForm,
                 },
             ],
+        },
+        {
+            path: '/:catchAll(.*)',
+            redirect: '/test/list'
         }
     ]
 })
